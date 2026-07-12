@@ -1,0 +1,2 @@
+# Deprecated: Cognify-AI uses npm workspaces (see cognify-ai/package.json "workspaces").
+# This file is kept only to avoid accidental breakage; it is not used by npm.

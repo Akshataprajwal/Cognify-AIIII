@@ -1,0 +1,22 @@
+{
+  "name": "cognify-ai",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w frontend\" \"npm run dev -w backend\"",
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier -w \"**/*.{ts,tsx,js,json,md,css}\"",
+    "prettier:check": "prettier -c \"**/*.{ts,tsx,js,json,md,css}\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  }
+}
