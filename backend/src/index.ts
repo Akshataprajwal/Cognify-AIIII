@@ -10,8 +10,13 @@ import { adminRouter } from "./routes/admin";
 import { generalLimiter } from "./middleware/rateLimiter";
 import { logger } from "./logger";
 
-// Validate environment configuration on startup
-validateEnv();
+// Validate environment configuration on startup (non-throwing so the serverless
+// function can respond to health checks before env vars are fully configured)
+try {
+  validateEnv();
+} catch (err) {
+  logger.warn("Environment validation warning: " + String(err));
+}
 
 const app = express();
 
@@ -56,18 +61,24 @@ app.use("/api/admin", adminRouter);
 // Global error handler
 app.use(errorHandler);
 
-const server = app.listen(env.PORT, () => {
-  logger.info({ port: env.PORT }, "Backend listening");
-});
+// Only start the HTTP server when running locally (not on Vercel serverless)
+if (process.env.VERCEL !== "1") {
+  const server = app.listen(env.PORT, () => {
+    logger.info({ port: env.PORT }, "Backend listening");
+  });
 
-server.on("error", (error: NodeJS.ErrnoException) => {
-  if (error.code === "EADDRINUSE") {
-    logger.error(
-      { port: env.PORT, code: error.code, errno: error.errno },
-      "Port already in use. Check for another backend instance or change PORT in environment."
-    );
-  } else {
-    logger.error({ error, port: env.PORT }, "Server failed to start.");
-  }
-  process.exit(1);
-});
+  server.on("error", (error: NodeJS.ErrnoException) => {
+    if (error.code === "EADDRINUSE") {
+      logger.error(
+        { port: env.PORT, code: error.code, errno: error.errno },
+        "Port already in use."
+      );
+    } else {
+      logger.error({ error, port: env.PORT }, "Server failed to start.");
+    }
+    process.exit(1);
+  });
+}
+
+// Export app for Vercel serverless handler
+export default app;
